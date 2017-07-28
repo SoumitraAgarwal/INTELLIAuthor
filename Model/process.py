@@ -15,7 +15,7 @@ def process_files(files):
 def clean_file(train):
 	train = train.replace("\n", " ")
 	train = train.decode('string_escape')
-	train = train.lower()
+	# train = train.lower()
 	train = train.split(".")
 	train = [x.translate(string.maketrans("",""), string.punctuation) for x in train]
 	return train
