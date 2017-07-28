@@ -2,6 +2,7 @@ import process
 import random
 
 def write_poem(Firsts, Centres, Lasts, mapFirsts, mapCentres, mapLasts, mapRhymes, lines, catches):
+	millis = 0
 	for i in range(lines):
 		line1 	= random.choice(Firsts)	
 		word  	= random.choice(mapFirsts[line1])
