@@ -1,88 +1,25 @@
-from nltk.corpus import stopwords
-import time
-import string
-import random
+import process
+import author
+import meta
 
-millis = int(round(time.time() * 1000))
-# stop = set(stopwords.words('english'))
-
-# print(stop)
-docs = range(4)
-
-doc1 = open("../Train/Doc1.txt", "r")
-millis = int(round(time.time() * 1000))-millis
-print("Opened document in " + str(millis))
-
+millis 			= meta.initialize_millis()
+trainDirectory 	= meta.initialize_train()
+docs 			= meta.initialize_docs()
+files 			= [trainDirectory + "Doc" + str(x+1) + ".txt" for x in docs]
+train 			= process.process_files(files)
+millis			= process.log("Opened files in ", millis, 1)
 
 # Doc cleaning
-train = doc1.read()
-train = train.replace("\n", " ")
-train = train.decode('string_escape')
-train = train.lower()
-train = train.split(".")
-train = [x.translate(string.maketrans("",""), string.punctuation) for x in train]
 
-millis = int(round(time.time() * 1000))
+train 			= process.clean_file(train)
 
-mapFirsts 	= {}
-mapCentres 	= {}
-mapLasts 	= {}
-mapRhymes  	= {}
+mapFirsts, mapCentres, mapLasts, Firsts, Centres, Lasts = process.create_map(train)
 
 # Map with lag 1 (Hope to create a probabilistic model)
 
-Firsts 	= []
-Lasts 	= []
-Centres = []
+millis			= process.log("Processed document in ", millis, 1)
+mapRhymes  		= process.get_rhymes(Lasts)
+millis 			= process.log("Created rhyme maps for the document in ", millis, 1)
+millis 			= process.log("Now I will start writing!\n", millis, 0)
 
-for i in range(len(train)):
-	sentence = train[i]
-	sentence = sentence.split(" ")
-	if(len(sentence) > 1):
-		Firsts.append(sentence[0])
-		mapFirsts[sentence[0]] = mapFirsts.get(sentence[0], []) + [sentence[1]]
-		for j in range(1,len(sentence)-1):
-			Centres.append(sentence[j])
-			mapCentres[sentence[j-1]] = mapCentres.get(sentence[j-1], []) + [sentence[j]]
-		Lasts.append(sentence[len(sentence)-1])
-		mapLasts[sentence[len(sentence)-2]] = mapLasts.get(sentence[len(sentence)-2], []) + [sentence[len(sentence)-1]]
-
-millis =  int(round(time.time() * 1000)) - millis
-print("Processed document in " + str(millis))
-millis =  int(round(time.time() * 1000))
-
-
-for i in range(len(Lasts)):
-	if(len(Lasts[i])>1):
-		ending 		=  Lasts[i][len(Lasts[i]) - 2:]
-		mapRhymes[ending] = mapRhymes.get(ending, []) + [Lasts[i]]
-
-
-millis =  int(round(time.time() * 1000)) - millis
-print("Created rhyme maps for the document in " + str(millis))
-millis =  int(round(time.time() * 1000))
-
-print("Now I will start writing!")
-print(mapLasts)
-
-for i in range(10):
-	line1 	= random.choice(Firsts)	
-	word  	= random.choice(mapFirsts[line1])
-	line1 	= line1 + " " + word
-	word 	= random.choice(mapCentres[word])
-	line1 	= line1 + " " + word
-	word 	= random.choice(mapCentres[word])
-	line1 	= line1 + " " + word
-	word 	= random.choice(mapLasts[word])
-	line1 	= line1 + " " + word + ",\n"
-	endword = random.choice(mapRhymes[word[len(word)-2:]])
-	line1 	= random.choice(Firsts)	
-	word  	= random.choice(mapFirsts[line1])
-	line1 	= line1 + " " + word
-	word 	= random.choice(mapCentres[word])
-	line1 	= line1 + " " + word
-	word 	= random.choice(mapCentres[word])
-	line1 	= line1 + " " + word
-	line1 	= line1 + " " + endword + ",\n"
-		
-
+author.write(Firsts, Centres, Lasts, mapFirsts, mapCentres, mapLasts, mapRhymes, 10, 3)
